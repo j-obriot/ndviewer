@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nd-viewer"
+name = "ndviewer"
 version = "0.1.0"
 description = "A small Qt viewer for multidimensional image data"
 readme = "README.md"
@@ -15,4 +15,4 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["nd_viewer"]
+packages = ["ndviewer"]
