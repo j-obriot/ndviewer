@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nd-viewer"
+version = "0.1.0"
+description = "A small Qt viewer for multidimensional image data"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.23",
+    "pyqtgraph>=0.13",
+    "PyQt6>=6.5",
+]
+
+[tool.setuptools]
+packages = ["nd_viewer"]
