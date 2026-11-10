@@ -6,13 +6,12 @@ Dependencies:
 
 Typical use:
     import numpy as np
-    from nd_viewer import NDViewer
+    from ndviewer import NDViewer
 
     viewer = NDViewer()
     viewer.add_image(np.random.rand(20, 256, 256), name="Raw")
     viewer.add_image(np.random.rand(20, 256, 256), name="Mask",
                      colormap="plasma", opacity=0.35)
-    viewer.show()
 
 The viewer window is shown on construction and its API is non-blocking.
 It relies on the host's Qt event loop; standalone scripts should call
