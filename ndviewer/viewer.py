@@ -25,6 +25,7 @@ flip the rendered image without modifying source arrays.
 
 from __future__ import annotations
 
+import inspect
 import sys
 import warnings
 from dataclasses import dataclass, field
@@ -73,6 +74,27 @@ def _ensure_qapplication():
     else:
         _APP = app
     return app
+
+
+def _infer_data_variable_name(data):
+    frame = inspect.currentframe()
+    caller = frame.f_back if frame is not None else None
+    try:
+        while caller is not None and caller.f_globals.get("__name__") == __name__:
+            caller = caller.f_back
+        if caller is None:
+            return None
+        return next(
+            (
+                variable_name
+                for variable_name, value in caller.f_locals.items()
+                if value is data and variable_name not in {"self", "cls"}
+            ),
+            None,
+        )
+    finally:
+        del frame
+        del caller
 
 
 class SliceSlider(QtWidgets.QSlider):
@@ -382,7 +404,7 @@ class LayerCollection:
 class NDViewer(QtWidgets.QMainWindow):
     """Multidimensional image viewer, shown immediately without blocking."""
 
-    def __init__(self, data=None, *, name="Image", axes=None, title="NDViewer"):
+    def __init__(self, data=None, *, name=None, axes=None, title="NDViewer"):
         _ensure_qapplication()
         super().__init__()
         self.setWindowTitle(title)
@@ -598,14 +620,27 @@ class NDViewer(QtWidgets.QMainWindow):
         visible=True,
         contrast=None,
     ) -> ImageLayer | None:
-        """Add an ND array, naming default dimensions Axis 0, Axis 1, etc."""
+        """Add an array, inferring its layer name from the caller when possible."""
         if self._warn_if_closed():
             return None
         if axes is None:
             axes = tuple(f"Axis {i}" for i in range(data.ndim))
         axes = tuple(str(a) for a in axes)
         if name is None:
-            name = f"Layer {len(self.layers) + 1}"
+            name = _infer_data_variable_name(data)
+            if name is None:
+                data_name = getattr(data, "name", None)
+                name = data_name if isinstance(data_name, str) and data_name else None
+            if name is None:
+                name = f"Layer {len(self.layers) + 1}"
+            if any(layer.name == name for layer in self.layers):
+                base_name = str(name)
+                suffix = 2
+                while any(
+                    layer.name == f"{base_name} {suffix}" for layer in self.layers
+                ):
+                    suffix += 1
+                name = f"{base_name} {suffix}"
         if any(layer.name == name for layer in self.layers):
             raise ValueError(f"A layer named {name!r} already exists.")
 
